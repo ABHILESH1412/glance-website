@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Glance — a fast, native image viewer for Linux</title>
+    <meta name="description" content="Glance opens a picture, shows it properly, and gets out of the way. GPU-drawn, memory-safe, and one button away from crop, resize, adjust, draw, text and export to a file size you name." />
+    <meta name="theme-color" content="#f4f2ee" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f0f12" media="(prefers-color-scheme: dark)" />
+    <meta property="og:title" content="Glance — a fast, native image viewer for Linux" />
+    <meta property="og:description" content="Look at pictures, and make small changes to them." />
+    <meta property="og:image" content="%BASE_URL%img/viewing.webp" />
+    <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <script>
+      try {
+        var t = localStorage.getItem('glance-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>Glance is a fast, native image viewer for Linux. This site needs JavaScript; the project lives at https://github.com/ABHILESH1412/glance</noscript>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
+</html>
