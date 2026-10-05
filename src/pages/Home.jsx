@@ -4,9 +4,10 @@ import { gsap, ScrollTrigger, setTitle, usePageMotion } from '../lib/motion';
 import GlanceWindow from '../components/GlanceWindow';
 import SizeTarget from '../components/SizeTarget';
 import CodeBlock from '../components/CodeBlock';
+import PdfReader from '../components/PdfReader';
 import Icon from '../components/Icon';
 import { apps, groups } from '../data/compare';
-import { channels, featuredChannel, version } from '../data/downloads';
+import { featuredChannel, version } from '../data/downloads';
 import '../styles/home.css';
 import { asset } from '../lib/base';
 
@@ -18,8 +19,23 @@ const stats = [
 ];
 
 const formats = [
-  'PNG', 'JPEG', 'WebP', 'HEIC', 'AVIF', 'SVG', 'TIFF', 'GIF', 'CR3', 'NEF', 'ARW', 'DNG', 'RAF', 'ORF',
-  'RW2', 'PEF', 'SRW', 'CR2', 'QOI', 'BMP', 'ICO', 'TGA', 'PNM', 'HEIF', 'SVGZ', 'NRW', 'CRW',
+  'PDF', 'PNG', 'JPEG', 'WebP', 'HEIC', 'AVIF', 'SVG', 'JPEG 2000', 'PSD', 'TIFF', 'GIF', 'CR3', 'NEF', 'OpenEXR', 'ARW',
+  'DNG', 'RAF', 'Illustrator', 'ORF', 'RW2', 'Radiance HDR', 'PEF', 'SRW', 'ICNS', 'CR2', 'QOI', 'PSB', 'BMP', 'ICO', 'TGA',
+  'PNM', 'HEIF', 'SVGZ', 'NRW', 'CRW',
+];
+
+const pdfPoints = [
+  ['Read', 'Every page in one column, one at a time, or two side by side. Contents, bookmarks, search that never freezes the window, and night mode that keeps colours.'],
+  ['Mark up', 'Highlight, underline, strike through, notes, speech bubbles, pens and shapes — saved into the file as ordinary annotations, so every PDF reader shows them.'],
+  ['Sign and redact', 'A signature written once and kept, put down as sharp ink. Redaction that removes what is under the box, not just covers it.'],
+  ['Protect and shrink', 'Require a password, saved with AES-256. Reduce the file size, and see the new size before deciding.'],
+];
+
+const newIn2 = [
+  { href: '/features#live-text', title: 'Live Text', text: 'Copy the words out of a screenshot, a photographed page or a sign — read on your own computer, in English and about 45 other languages.' },
+  { href: '/features#combine', title: 'Combine into PDF', text: 'Pages from any number of PDFs and pictures, dragged into order, turned, or blank, saved as one new PDF.' },
+  { href: '/features#redact', title: 'Redaction that removes', text: 'A black box hides nothing. Glance takes out what is under it, in pictures and PDFs, and checks that it is gone.' },
+  { href: '/features#more', title: 'And the rest', text: 'Slideshow, photo details, animated GIF frames, levels, white balance, printing, and one Preferences window.' },
 ];
 
 const shots = [
@@ -29,11 +45,13 @@ const shots = [
 ];
 
 const teaser = [
-  groups[0].rows[0],
-  groups[0].rows[1],
-  groups[1].rows[5],
-  groups[1].rows[7],
-  groups[2].rows[2],
+  groups[2].rows[0], // read, search and copy PDF text
+  groups[2].rows[2], // sign a PDF
+  groups[2].rows[8], // redact text permanently
+  groups[3].rows[3], // Live Text
+  groups[1].rows[10], // hit a file size
+  groups[0].rows[1], // SVG zoom without re-rasterising
+  groups[3].rows[11], // runs on Linux
 ];
 
 export default function Home() {
@@ -123,29 +141,30 @@ export default function Home() {
               <span class="tag">
                 <i class="tag__dot" /> Version {version}
               </span>
+              <span class="tag">Pictures &amp; PDFs</span>
               <span class="tag">Linux</span>
               <span class="tag">Free &amp; open source</span>
             </div>
             <h1 class="display hero__title">
               <span class="ln">
-                <span>Look at pictures,</span>
+                <span>Look at pictures</span>
               </span>
               <span class="ln">
                 <span>
-                  <em>and make small</em>
+                  and PDFs, <em>and make</em>
                 </span>
               </span>
               <span class="ln">
                 <span>
-                  <em>changes to them.</em>
+                  <em>small changes to them.</em>
                 </span>
               </span>
             </h1>
           </div>
           <div class="hero__side">
             <p class="lede" data-intro>
-              Glance is a fast, native image viewer for Linux. It opens a file, shows it properly, and gets out of the way — with
-              an editor one button away when you need it.
+              Glance is a fast, native image and PDF viewer for Linux. It opens a file, shows it properly, and gets out of the
+              way — with an editor one button away when you need it.
             </p>
             <div class="hero__cta" data-intro>
               <A href="/download" class="btn btn--primary">
@@ -313,6 +332,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ------------------------------------------------------------ PDFs */}
+      <section class="section pdfs">
+        <div class="wrap">
+          <div class="section-head section-head--split">
+            <div>
+              <span class="kicker" data-reveal>
+                New in {version}
+              </span>
+              <h2 class="h2" data-reveal>
+                PDFs open in the same window — <em>and the changes stay in the file.</em>
+              </h2>
+            </div>
+            <p class="lede" data-reveal>
+              Search them, highlight, annotate, draw and write on them, sign, redact, protect with a password, make smaller, and
+              combine with other PDFs and pictures. Every change is saved where any PDF reader will see it.
+            </p>
+          </div>
+          <div class="pdfs__grid">
+            <div data-reveal>
+              <PdfReader />
+              <p class="faint pdfs__hint">Try it: search for a word, pick a highlight colour, switch on night mode.</p>
+            </div>
+            <dl class="pdfs__points">
+              <For each={pdfPoints}>
+                {([t, d]) => (
+                  <div data-reveal>
+                    <dt>{t}</dt>
+                    <dd>{d}</dd>
+                  </div>
+                )}
+              </For>
+              <div data-reveal>
+                <A href="/features#pdfs" class="btn">
+                  Everything it does with PDFs <Icon name="arrow" class="arrow" />
+                </A>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------------------------------------------------ size target */}
       <section class="section size">
         <div class="wrap">
@@ -351,6 +411,27 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ------------------------------------------------------------ also new */}
+      <section class="section--tight wrap news">
+        <div class="news__head">
+          <span class="kicker" data-reveal>
+            Also new in {version}
+          </span>
+        </div>
+        <div class="news__list">
+          <For each={newIn2}>
+            {(n, i) => (
+              <A href={n.href} class="news__item" data-reveal>
+                <span class="news__n">0{i() + 1}</span>
+                <span class="news__t">{n.title}</span>
+                <span class="news__d">{n.text}</span>
+                <Icon name="arrow" class="arrow news__arrow" />
+              </A>
+            )}
+          </For>
+        </div>
+      </section>
+
       {/* ------------------------------------------------------------ screenshots */}
       <section class="section shots-sec">
         <div class="wrap">
@@ -384,7 +465,7 @@ export default function Home() {
       <section class="section--tight formats" aria-label="Formats">
         <div class="wrap formats__head">
           <h2 class="h2" data-reveal>
-            Reads what a photographer <em>actually has.</em>
+            Reads what a photographer <em>actually has</em> — and PDFs.
           </h2>
         </div>
         <div class="marquee" aria-hidden="true">
@@ -399,7 +480,7 @@ export default function Home() {
         </div>
         <p class="wrap faint formats__foot" data-reveal>
           EXIF orientation is honoured, so phone photos are upright. Animated GIF and WebP play — and keep playing while you zoom
-          or rotate.
+          or rotate. HDR files are fitted into the screen’s range; Photoshop files show the picture as last saved.
         </p>
       </section>
 
@@ -414,9 +495,9 @@ export default function Home() {
               The short, <em>honest</em> version.
             </h2>
             <p class="muted" data-reveal>
-              Glance is the fastest and the most capable editor of the six, and the only one that can hit a file size on request.
-              It is not a photo library: if you want tags, catalogs or batch jobs, gThumb is still the answer — and nomacs if you
-              need Windows too.
+              On Linux, Glance is the only viewer that also reads, marks up, signs, combines and redacts PDFs, reads the text in
+              pictures, or hits a file size on request — the things people otherwise keep a Mac around for. Its yardstick is
+              Apple’s Preview, and it still lacks PDF forms, 3D models and batch work.
             </p>
             <div data-reveal>
               <A href="/compare" class="btn">
@@ -460,17 +541,17 @@ export default function Home() {
             <div class="get__glow" aria-hidden="true" />
             <img class="get__logo" src={asset('img/logo.webp')} alt="" width="120" height="120" loading="lazy" />
             <h2 class="h2">
-              Open a picture. <em>That's it.</em>
+              Open a picture, or a PDF. <em>That's it.</em>
             </h2>
             <p class="get__sub">
-              Glance {version} · Linux · GPL-3.0 · {featured ? `install with ${featured.name.toLowerCase()}` : ''}
+              Glance {version} · 64-bit Linux · GPL-3.0 · as a Flatpak, on any distribution
             </p>
-            {featured && <CodeBlock code={featured.command} class="get__code" />}
+            <CodeBlock code={[...featured.steps.map((s) => s.code), featured.run].join('\n')} class="get__code" />
             <div class="get__cta">
               <A href="/download" class="btn btn--primary">
                 <Icon name="download" /> All download options
               </A>
-              <span class="faint get__count">{channels.length} ways to install</span>
+              <span class="faint get__count">Commands for Ubuntu, Debian, Fedora, openSUSE, Arch, and an AppImage</span>
             </div>
           </div>
         </div>

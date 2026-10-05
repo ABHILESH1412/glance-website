@@ -510,6 +510,7 @@ select.field { padding-right: 28px; }
 }
 .code__l::before { content: '$ '; color: #6f6c7b; }
 .code__l--note { color: #7d7a88; }
+.code__l--cont::before { content: '  '; }
 .code__l--note::before { content: '  '; }
 /* The comment after a command: a little gap, and it wraps as a unit. */
 .code__c { color: #7d7a88; margin-left: 2ch; }
@@ -529,7 +530,8 @@ select.field { padding-right: 28px; }
 .code__copy:hover { background: #26262d; color: #fff; }
 
 /* segmented controls without a sliding thumb */
-.seg button[aria-pressed='true'] {
+.seg button[aria-pressed='true'],
+.seg button[role='radio'][aria-checked='true'] {
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--line);
   transition: color 0.2s, background-color 0.25s, box-shadow 0.25s;

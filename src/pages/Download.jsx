@@ -2,25 +2,49 @@ import { For, Show, createSignal } from 'solid-js';
 import { gsap, reducedMotion, setTitle, usePageMotion } from '../lib/motion';
 import CodeBlock from '../components/CodeBlock';
 import Icon from '../components/Icon';
-import { channels, featuredChannel, guessChannel, isLinux, releases, repo, requirements, version } from '../data/downloads';
+import {
+  APP_ID,
+  channels,
+  checkSums,
+  files,
+  guessChannel,
+  isLinux,
+  latestRelease,
+  repo,
+  requirements,
+  version,
+} from '../data/downloads';
 import '../styles/download.css';
+
+const whatsNew = [
+  'PDFs: search, select and copy text, highlight, notes, contents and bookmarks, night mode',
+  'Draw and write on PDFs, sign them, and redact them for good',
+  'Combine PDFs and pictures into one PDF; password-protect PDFs and make them smaller',
+  'Live Text: copy the text out of pictures, read on your own computer',
+  'More shapes, levels, white balance and sharpness; JPEG 2000, Photoshop, OpenEXR and more',
+  'Slideshow, photo details, animated GIF frames, printing and Preferences',
+];
 
 const faqs = [
   {
     q: 'Is there a Windows or macOS version?',
-    a: 'No. Glance is built on GTK 4 and libadwaita and is made for the Linux desktop. If you need Windows too, nomacs and qView are good viewers that run there.',
+    a: 'No. Glance is built on GTK 4 and libadwaita for the Linux desktop, on 64-bit Intel and AMD computers. If you need Windows too, nomacs and qView are good viewers that run there.',
   },
   {
     q: 'Which one should I pick?',
-    a: 'Flatpak works on any distribution and keeps itself updated. If your distribution has a package, that fits in best with the rest of your system. Building from source works everywhere and takes a few minutes.',
+    a: 'The Flatpak, on almost every distribution: it brings everything it needs and works the same everywhere. On Arch and its relatives, the Arch package. The AppImage if you want one file with nothing to install, on a distribution from 2024 or later.',
   },
   {
-    q: 'Why is the Arch and Debian package called glance-image-viewer?',
-    a: 'Because “glance” is already taken there by an unrelated program. The app itself is still called Glance and the command is still glance.',
+    q: 'Does it update itself?',
+    a: 'Not yet. Run your distribution’s install commands again: they always fetch the newest release. Installing the newer Flatpak over the old one keeps your settings, signatures and everything else.',
   },
   {
-    q: 'Does it cost anything, or phone home?',
-    a: 'It is free software under GPL-3.0-or-later. There is no account, no telemetry and nothing to upload: the file-size feature runs on your machine.',
+    q: 'Why is the Arch package called glance-image-viewer?',
+    a: 'Because Arch already has an unrelated program called “glance”, and the two cannot be installed together. The app is still called Glance, and the command is still glance.',
+  },
+  {
+    q: 'Does it send anything anywhere?',
+    a: 'No. It is free software under GPL-3.0-or-later, with no account and no telemetry. Live Text downloads its engine and models (42.5 MB) the first time you use it, after asking, checked against fixed checksums — and then reads pictures on your own computer.',
   },
 ];
 
@@ -28,13 +52,10 @@ export default function Download() {
   let root, panel;
   setTitle('Download');
 
-  const initial = () => {
-    const guess = channels.find((c) => c.id === guessChannel() && c.ready);
-    return (guess || featuredChannel() || channels[0]).id;
-  };
+  const initial = () => (channels.find((c) => c.id === guessChannel()) || channels[0]).id;
   const [selected, setSelected] = createSignal(initial());
   const current = () => channels.find((c) => c.id === selected());
-  const files = channels.filter((c) => c.file).map((c) => ({ ...c.file, channel: c, ready: c.file.ready ?? c.ready }));
+  const file = () => files[current().file];
 
   function pick(id) {
     if (id === selected()) return;
@@ -51,32 +72,50 @@ export default function Download() {
     });
   }
 
+  function jumpTo(id) {
+    pick(id);
+    document.getElementById('install')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  }
+
   usePageMotion(() => root);
 
   return (
     <div ref={root} class="dl">
       <section class="wrap dl__hero">
-        <span class="kicker" data-intro>
-          Version {version}
-        </span>
-        <h1 class="display dl__title" data-intro>
-          Get <em>Glance.</em>
-        </h1>
-        <p class="lede" data-intro>
-          Free, open source, and made for Linux. Pick how you like to install things — every option gives you the same app, in
-          your launcher and in “Open With” for images.
-        </p>
-        <Show when={!isLinux()}>
-          <p class="dl__os" data-intro>
-            <Icon name="monitor" size={18} /> You seem to be on another system. Glance runs on Linux — send this page to the
-            machine you'll use it on.
+        <div class="dl__intro">
+          <span class="kicker" data-intro>
+            Version {version}
+          </span>
+          <h1 class="display dl__title" data-intro>
+            Get <em>Glance.</em>
+          </h1>
+          <p class="lede" data-intro>
+            Free, open source, for 64-bit Linux. Pick your distribution and paste the commands, one block at a time. Each one
+            downloads the latest release, so they stay the same from one release to the next.
           </p>
-        </Show>
+          <Show when={!isLinux()}>
+            <p class="dl__os" data-intro>
+              <Icon name="monitor" size={18} /> You seem to be on another system. Glance runs on Linux — send this page to the
+              machine you'll use it on.
+            </p>
+          </Show>
+        </div>
+        <aside class="dl__new card" data-intro>
+          <div class="dl__new-head">
+            <span class="kicker">New in {version}</span>
+            <a class="link" href={latestRelease} target="_blank" rel="noopener">
+              Release notes
+            </a>
+          </div>
+          <ul>
+            <For each={whatsNew}>{(item) => <li>{item}</li>}</For>
+          </ul>
+        </aside>
       </section>
 
-      <section class="wrap dl__main" data-intro>
-        <div class="dl__list" role="tablist" aria-label="Ways to install" aria-orientation="vertical">
-          <For each={[...channels].sort((a, b) => b.ready - a.ready)}>
+      <section class="wrap dl__main" id="install" data-intro>
+        <div class="dl__list" role="tablist" aria-label="Your distribution" aria-orientation="vertical">
+          <For each={channels}>
             {(c) => (
               <button
                 type="button"
@@ -89,9 +128,7 @@ export default function Download() {
               >
                 <span class="dl__opt-name">{c.name}</span>
                 <span class="dl__opt-for">{c.for}</span>
-                <span class="dl__badge" classList={{ 'is-ready': c.ready }}>
-                  {c.ready ? 'Available' : 'Coming soon'}
-                </span>
+                <span class="dl__badge is-ready">{c.method}</span>
               </button>
             )}
           </For>
@@ -100,77 +137,142 @@ export default function Download() {
         <div class="dl__panel card" id="dl-panel" role="tabpanel" aria-labelledby={`tab-${selected()}`} ref={panel}>
           <div class="dl__panel-head">
             <div>
+              <span class="dl__method">{current().method}</span>
               <h2 class="h3">{current().name}</h2>
-              <p class="muted">{current().note}</p>
+              <p class="muted">
+                {current().note}
+                <Show when={current().link}>
+                  {' '}
+                  <a class="link" href={current().link.url} target="_blank" rel="noopener">
+                    {current().link.label}
+                  </a>
+                </Show>
+              </p>
             </div>
-            <Show when={!current().ready}>
-              <span class="dl__soon">Not published yet</span>
-            </Show>
           </div>
 
-          <Show when={current().deps}>
-            <div class="dl__step">
-              <div class="dl__n">1</div>
-              <div class="dl__step-body">
-                <h3>Install what it builds against</h3>
-                <For each={Object.entries(current().deps)}>{([distro, cmd]) => <CodeBlock title={distro} code={cmd} />}</For>
-              </div>
-            </div>
-          </Show>
-
-          <Show when={current().command}>
-            <div class="dl__step" classList={{ 'is-dim': !current().ready }}>
-              <div class="dl__n">{current().deps ? 2 : 1}</div>
-              <div class="dl__step-body">
-                <h3>{current().deps ? 'Get the source, build and install' : 'Install'}</h3>
-                <CodeBlock code={current().command} />
-              </div>
-            </div>
-          </Show>
-
-          <Show when={current().file}>
-            {(f) => (
-              <div class="dl__step" classList={{ 'is-dim': !(f().ready ?? current().ready) }}>
-                <div class="dl__n">{current().command ? (current().deps ? 3 : 2) : 1}</div>
+          <For each={current().steps}>
+            {(step, i) => (
+              <div class="dl__step">
+                <div class="dl__n">{i() + 1}</div>
                 <div class="dl__step-body">
-                  <h3>{current().command ? 'Or download the file' : 'Download the package'}</h3>
-                  <div class="dl__file">
-                    <Icon name="box" size={22} />
-                    <div class="dl__file-meta">
-                      <span class="mono">{f().label}</span>
-                      <span class="faint">{f().size || (f().ready ?? current().ready ? '' : 'coming with the first release')}</span>
-                    </div>
-                    <Show
-                      when={f().ready ?? current().ready}
-                      fallback={
-                        <span class="btn btn--sm dl__disabled" aria-disabled="true">
-                          <Icon name="download" size={16} /> Soon
-                        </span>
-                      }
-                    >
-                      <a class="btn btn--primary btn--sm" href={f().url} download>
-                        <Icon name="download" size={16} /> Download
-                      </a>
+                  <h3>
+                    {step.title}
+                    <Show when={step.hint}>
+                      <span class="dl__hint"> — {step.hint}</span>
                     </Show>
-                  </div>
-                  <Show when={f().install}>
-                    <p class="faint small-print">Then install it:</p>
-                    <CodeBlock code={f().install} />
+                  </h3>
+                  <Show when={step.code}>
+                    <CodeBlock code={step.code} />
+                  </Show>
+                  <Show when={step.blocks}>
+                    <p class="faint small-print">The one for your distribution:</p>
+                    <For each={Object.entries(step.blocks)}>{([distro, cmd]) => <CodeBlock title={distro} code={cmd} />}</For>
                   </Show>
                 </div>
               </div>
             )}
+          </For>
+
+          <div class="dl__step">
+            <div class="dl__n">{current().steps.length + 1}</div>
+            <div class="dl__step-body">
+              <h3>Run it</h3>
+              <CodeBlock code={current().run} />
+              <p class="faint small-print">
+                {current().id === 'appimage' ? 'Or double-click the file.' : 'Or find Glance among your applications.'}
+              </p>
+            </div>
+          </div>
+
+          <Show when={current().after}>
+            <p class="dl__after-note">
+              <Icon name="check" size={16} />
+              <span>
+                {current().after}
+                <Show when={current().links}>
+                  {' '}
+                  <For each={current().links}>
+                    {(l, i) => (
+                      <>
+                        {i() > 0 && ' · '}
+                        <a class="link" href={l.url} target="_blank" rel="noopener">
+                          {l.label}
+                        </a>
+                      </>
+                    )}
+                  </For>
+                </Show>
+              </span>
+            </p>
           </Show>
 
-          <div class="dl__after">
-            <div>
-              <h3>Run it</h3>
-              <CodeBlock code={current().run || 'glance path/to/image.jpg'} />
+          <Show when={current().trouble}>
+            {(t) => (
+              <details class="dl__more">
+                <summary>
+                  {t().title}
+                  <Icon name="plus" size={18} />
+                </summary>
+                <div class="dl__more-body">
+                  <p class="muted">{t().text}</p>
+                  <For each={Object.entries(t().blocks)}>{([distro, cmd]) => <CodeBlock title={distro} code={cmd} />}</For>
+                  <p class="muted">{t().or.text}</p>
+                  <CodeBlock code={t().or.code} />
+                </div>
+              </details>
+            )}
+          </Show>
+
+          <Show when={current().flatpakBuild}>
+            {(fb) => (
+              <details class="dl__more">
+                <summary>
+                  {fb().title}
+                  <Icon name="plus" size={18} />
+                </summary>
+                <div class="dl__more-body">
+                  <p class="muted">{fb().text}</p>
+                  <h4>1. The build tool</h4>
+                  <For each={Object.entries(fb().blocks)}>{([distro, cmd]) => <CodeBlock title={distro} code={cmd} />}</For>
+                  <h4>2. The runtime it builds against</h4>
+                  <CodeBlock code={fb().runtime} />
+                  <h4>3. Get the source, build and install</h4>
+                  <CodeBlock code={fb().build} />
+                  <h4>4. Run it</h4>
+                  <CodeBlock code={fb().run} />
+                </div>
+              </details>
+            )}
+          </Show>
+
+          <div class="dl__file">
+            <Icon name="box" size={22} />
+            <div class="dl__file-meta">
+              <span class="mono">{file().name}</span>
+              <span class="faint">
+                {file().what}
+                {file().size ? ` · ${file().size}` : ''}
+              </span>
             </div>
+            <a class="btn btn--primary btn--sm" href={file().url}>
+              <Icon name="download" size={16} /> Download
+            </a>
+          </div>
+
+          <div class="dl__foot">
             <div>
               <h3>Remove it</h3>
               <CodeBlock code={current().remove} />
             </div>
+            <Show when={current().also}>
+              <button type="button" class="dl__also" onClick={() => jumpTo(current().also)}>
+                <span class="faint">Also works here</span>
+                <span>
+                  {channels.find((c) => c.id === current().also).name} <Icon name="arrow" size={16} />
+                </span>
+              </button>
+            </Show>
           </div>
         </div>
       </section>
@@ -181,29 +283,51 @@ export default function Download() {
             Direct <em>downloads</em>
           </h2>
           <p class="muted" data-reveal>
-            Every file is attached to a release on GitHub, next to the source it was built from.{' '}
-            <a class="link" href={releases} target="_blank" rel="noopener">
-              All releases
+            The files attached to the latest release, for 64-bit Intel and AMD computers.{' '}
+            <a class="link" href={latestRelease} target="_blank" rel="noopener">
+              Release {version} on GitHub
             </a>
           </p>
         </div>
         <div class="dl__table card" data-reveal>
-          <For each={files}>
+          <For each={Object.values(files)}>
             {(f) => (
               <div class="dl__row">
                 <div class="dl__row-main">
-                  <span class="mono dl__row-name">{f.label}</span>
-                  <span class="faint">{f.channel.name}</span>
+                  <span class="mono dl__row-name">{f.name}</span>
+                  <span class="faint">{f.what}</span>
                 </div>
                 <span class="faint dl__row-size">{f.size}</span>
-                <Show when={f.ready} fallback={<span class="dl__badge">Coming soon</span>}>
-                  <a class="btn btn--sm" href={f.url} download>
-                    <Icon name="download" size={16} /> Download
-                  </a>
-                </Show>
+                <a class="btn btn--sm" href={f.url}>
+                  <Icon name="download" size={16} /> Download
+                </a>
               </div>
             )}
           </For>
+        </div>
+
+        <div class="dl__extra">
+          <div data-reveal>
+            <h3 class="h3">Checking the download</h3>
+            <p class="muted">
+              Optional. Each release lists the SHA-256 of its files in SHA256SUMS. In the folder you downloaded to:
+            </p>
+            <CodeBlock code={checkSums} />
+            <p class="faint small-print">Every file you downloaded should say OK.</p>
+          </div>
+          <div data-reveal>
+            <h3 class="h3">Updating, and what stays behind</h3>
+            <p class="muted">
+              Run your distribution’s install commands again: they always fetch the newest release. A Flatpak installed from a
+              file does not update itself, and installing the newer file over it keeps your settings, signatures and everything
+              else.
+            </p>
+            <p class="muted">
+              Uninstalling leaves your settings in <code>~/.config/glance</code>, and your signatures and Live Text’s download in{' '}
+              <code>~/.local/share/glance</code> — for the Flatpak, both under <code>~/.var/app/{APP_ID}</code>. Delete those
+              folders as well to remove every trace.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -242,3 +366,4 @@ export default function Download() {
     </div>
   );
 }
+

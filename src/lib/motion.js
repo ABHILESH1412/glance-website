@@ -65,5 +65,5 @@ export function usePageMotion(rootRef, setup) {
 }
 
 export function setTitle(title) {
-  document.title = title ? `${title} — Glance` : 'Glance — a fast, native image viewer for Linux';
+  document.title = title ? `${title} — Glance` : 'Glance — a fast, native image and PDF viewer for Linux';
 }

@@ -9,11 +9,12 @@ import './editor-tour.css';
 const sections = [
   { id: 'rotate', icon: 'rotate-cw', name: 'Rotate & Flip', text: 'Quarter turns, or any angle typed into the box. A separate header button turns the picture 90° just to look at it, without changing the file.' },
   { id: 'crop', icon: 'crop', name: 'Crop', text: 'Drag a rectangle, pull any of its eight handles, or pick an aspect preset — including the usual social sizes.' },
-  { id: 'resize', icon: 'resize', name: 'Resize', text: 'Handles on the picture or numbers in the panel, kept in step, with an optional aspect lock.' },
-  { id: 'adjust', icon: 'adjust', name: 'Adjust', text: 'Brightness, contrast and saturation, applied live on the GPU and baked identically on save.' },
-  { id: 'draw', icon: 'brush', name: 'Draw', text: 'Pen, highlighter, line, arrow, rectangle, ellipse — with the buttons drawing their own shapes.' },
+  { id: 'resize', icon: 'resize', name: 'Resize', text: 'Handles on the picture or numbers in the panel, kept in step, with an optional aspect lock — in pixels, percent, inches or centimetres, and the print resolution, resampled or not.' },
+  { id: 'adjust', icon: 'adjust', name: 'Adjust', text: 'Exposure, brightness, contrast, highlights, shadows; saturation, temperature, tint, sepia; and sharpness, or softness below zero. Saving bakes exactly what was shown.' },
+  { id: 'levels', icon: 'sliders', name: 'Levels', text: 'The histogram, with handles for the black point, midtones and white point, per channel or all together — and Auto Levels, which also takes out a colour cast.' },
+  { id: 'draw', icon: 'brush', name: 'Draw', text: 'Pen, highlighter, arrows, rectangles, ellipses, polygons, stars, speech bubbles, ticks and crosses, filled or not. Signature puts down one written once and kept; Select picks any drawing up again to move, resize or recolour.' },
   { id: 'text', icon: 'text', name: 'Text', text: 'Font, size, colour, background, bold, italic, underline, dragged anywhere on the picture.' },
-  { id: 'export', icon: 'export', name: 'Export', text: 'Any format the picture can honestly become, with a quality dial — or a file size to aim for.' },
+  { id: 'export', icon: 'export', name: 'Export', text: 'PNG, JPEG, HEIC, WebP, TIFF, JPEG 2000, PSD, OpenEXR, TGA, BMP, GIF, ICO or ICNS, with a quality dial — or a file size to aim for.' },
 ];
 
 export default function EditorTour() {
@@ -62,6 +63,22 @@ export default function EditorTour() {
           .to(f, { b: 1.2, c: 1.25, duration: 1.1, onUpdate: apply }, '+=0.2')
           .to(f, { s: 0.25, b: 0.9, duration: 1.2, onUpdate: apply }, '+=0.4')
           .to(f, { b: 1, c: 1, s: 1, duration: 1, onUpdate: apply }, '+=0.5');
+      } else if (id === 'levels') {
+        const f = { b: 0, w: 255, m: 1 };
+        const apply = () => {
+          const lo = f.b / 255;
+          const hi = f.w / 255;
+          const slope = 1 / Math.max(0.05, hi - lo);
+          q('.et__pic').style.filter = `contrast(${slope.toFixed(3)}) brightness(${(1 + (f.m - 1) * 0.35).toFixed(3)})`;
+          q('.et__lv-b').style.left = `${(f.b / 255) * 100}%`;
+          q('.et__lv-w').style.left = `${(f.w / 255) * 100}%`;
+          q('.et__lv-m').style.left = `${((f.b + (f.w - f.b) * (0.5 / f.m)) / 255) * 100}%`;
+        };
+        apply();
+        loop
+          .to(f, { b: 38, w: 214, duration: 1.2, onUpdate: apply })
+          .to(f, { m: 1.35, duration: 1, onUpdate: apply }, '+=0.3')
+          .to(f, { b: 0, w: 255, m: 1, duration: 1.1, onUpdate: apply }, '+=0.8');
       } else if (id === 'draw') {
         const paths = stage.querySelectorAll('.et__ink path, .et__ink ellipse');
         paths.forEach((p) => {
@@ -176,6 +193,24 @@ export default function EditorTour() {
                     </div>
                   )}
                 </For>
+              </div>
+            </div>
+          </Match>
+          <Match when={current() === 'levels'}>
+            <div class="et__art">
+              <div class="et__pic">
+                <Scene index={3} />
+              </div>
+              <div class="et__levels">
+                <svg viewBox="0 0 256 64" preserveAspectRatio="none" aria-hidden="true">
+                  <path
+                    d="M0 64 L0 58 C 20 52, 30 30, 46 34 S 70 12, 88 22 S 112 46, 130 30 S 160 8, 178 20 S 206 44, 222 40 S 246 54, 256 60 L256 64 Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <span class="et__lv et__lv-b" />
+                <span class="et__lv et__lv-m" />
+                <span class="et__lv et__lv-w" />
               </div>
             </div>
           </Match>

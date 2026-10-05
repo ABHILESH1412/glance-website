@@ -11,6 +11,7 @@ const alternatives = [
   { app: 'gthumb', when: 'You want a photo library', text: 'Tags, catalogs, batch jobs or a camera import wizard — gThumb is still the answer.' },
   { app: 'nomacs', when: 'You need Windows too', text: 'nomacs runs on Linux, Windows and macOS, and has a thumbnail browser and batch processing.' },
   { app: 'loupe', when: 'You only ever look', text: 'Loupe is the closest in spirit — same toolkit, same language — but stops at crop and rotate.' },
+  { app: 'preview', when: 'You need PDF forms or 3D', text: 'Against Preview itself, Glance still lacks filling in PDF forms, 3D models and batch work — and Preview needs a Mac.' },
 ];
 
 export default function Compare() {
@@ -51,10 +52,11 @@ export default function Compare() {
           How it compares
         </span>
         <h1 class="display" data-intro>
-          Six viewers, <em>side by side.</em>
+          The Linux viewers, <em>and the Mac’s.</em>
         </h1>
         <p class="lede" data-intro>
-          Against the image viewers people actually use on Linux, compiled from each project's own documentation in September
+          Against the image viewers people actually use on Linux, and against Apple’s Preview — the Mac’s built-in viewer that
+          Glance takes as its yardstick. Compiled from each project’s own documentation and Apple’s Preview User Guide in October
           2026. Features move, so check upstream if one matters to you.
         </p>
       </section>
@@ -154,7 +156,10 @@ export default function Compare() {
             </For>
           </table>
         </div>
-        <p class="faint cmp__foot">Icons are each project's own, from their Flathub listings, used to identify them.</p>
+        <p class="faint cmp__foot">
+          Icons are each project’s own — from their Flathub listings, and Apple’s for Preview — used only to identify them. Apple
+          and Preview are trademarks of Apple Inc.; Glance is not affiliated with Apple.
+        </p>
       </section>
 
       <section class="section wrap">
@@ -164,8 +169,12 @@ export default function Compare() {
               The short version
             </span>
             <p class="verdict__text" data-reveal>
-              Glance is the fastest and the most capable editor of the six, and the <em>only one that can hit a file size</em> on
-              request. It is not a photo library.
+              On Linux, Glance is the only viewer here that also reads, marks up, signs, combines and redacts PDFs, reads the text
+              in pictures, or <em>hits a file size on request</em> — the things people otherwise keep a Mac around for.
+            </p>
+            <p class="muted" data-reveal>
+              It also does a few things Preview does not: SVG, rotating to any angle, compressing to an exact size, night mode for
+              PDFs, and browsing the whole folder. It is not a photo library.
             </p>
           </div>
           <div class="alts">

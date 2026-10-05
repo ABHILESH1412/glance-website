@@ -30,7 +30,9 @@ export default function CodeBlock(props) {
         <code>
           {text()
             .split('\n')
-            .map((line) => {
+            .map((line, i, lines) => {
+              // A line carrying on from a trailing backslash is the same command: no prompt.
+              if (i > 0 && lines[i - 1].trimEnd().endsWith('\\')) return <span class="code__l code__l--cont">{line}</span>;
               const hash = line.search(/(^|\s)#\s/);
               if (hash === -1) return <span class="code__l">{line}</span>;
               const command = line.slice(0, hash).trimEnd();
