@@ -1,0 +1,43 @@
+{
+  "tag": "v2.0.1",
+  "version": "2.0.1",
+  "name": "Glance 2.0.1",
+  "date": "2026-10-08T13:19:30Z",
+  "url": "https://github.com/ABHILESH1412/glance/releases/tag/v2.0.1",
+  "notes": [
+    {
+      "kind": "fix",
+      "text": "Release script: dry run, ARGS, full commit messages in notes"
+    },
+    {
+      "kind": "feat",
+      "text": "Auto-update for AppImage, Flatpak and Arch"
+    },
+    {
+      "kind": "fix",
+      "text": "Highlights, notes, shapes and ink now show in phone PDF viewers"
+    }
+  ],
+  "assets": [
+    {
+      "name": "glance-image-viewer-x86_64.pkg.tar.zst",
+      "size": 7106313,
+      "url": "https://github.com/ABHILESH1412/glance/releases/download/v2.0.1/glance-image-viewer-x86_64.pkg.tar.zst"
+    },
+    {
+      "name": "Glance-x86_64.AppImage",
+      "size": 51718648,
+      "url": "https://github.com/ABHILESH1412/glance/releases/download/v2.0.1/Glance-x86_64.AppImage"
+    },
+    {
+      "name": "Glance-x86_64.flatpak",
+      "size": 9768560,
+      "url": "https://github.com/ABHILESH1412/glance/releases/download/v2.0.1/Glance-x86_64.flatpak"
+    },
+    {
+      "name": "SHA256SUMS",
+      "size": 282,
+      "url": "https://github.com/ABHILESH1412/glance/releases/download/v2.0.1/SHA256SUMS"
+    }
+  ]
+}

@@ -1,29 +1,46 @@
 // ─────────────────────────────────────────────────────────────────────────
-//  Everything the site says about getting Glance lives in this file.
-//  Commands are the ones in the Glance README, word for word.
+//  How to get Glance. Commands are the ones in the Glance README, word for word.
 //
-//  The download links use GitHub's /releases/latest/download/<file>, which
-//  always serves the newest release — so a new release needs no change here
-//  unless a file is renamed. Do bump `version` and the file sizes.
+//  Nothing here needs changing for a new release: the version, the files and
+//  their sizes come from GitHub's latest release (see ./release.js), and the
+//  download links use /releases/latest/download/<file>, which always serves
+//  the newest one.
 // ─────────────────────────────────────────────────────────────────────────
+import { createMemo, createRoot } from 'solid-js';
+import { release } from './release';
+import { formatSize } from './release-normalize';
 
-export const version = '2.0.0';
 export const repo = 'https://github.com/ABHILESH1412/glance';
 export const releases = `${repo}/releases`;
-export const latestRelease = `${repo}/releases/latest`;
 const latest = (file) => `${repo}/releases/latest/download/${file}`;
+
+export const version = () => release().version;
+export const releaseUrl = () => release().url;
+export const releaseDate = () => release().date;
+export const releaseNotes = () => release().notes;
 
 export const APP_ID = 'io.github.abhilesh1412.Glance';
 const FLATHUB = 'flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo';
 
-// The files attached to every release.
-export const files = {
-  flatpak: { name: 'Glance-x86_64.flatpak', url: latest('Glance-x86_64.flatpak'), size: '8.9 MB', what: 'Flatpak bundle — any distribution' },
-  appimage: { name: 'Glance-x86_64.AppImage', url: latest('Glance-x86_64.AppImage'), size: '49.3 MB', what: 'AppImage — one file, distributions from 2024 on' },
-  arch: { name: 'glance-image-viewer-x86_64.pkg.tar.zst', url: latest('glance-image-viewer-x86_64.pkg.tar.zst'), size: '6.7 MB', what: 'Arch package — Arch, Manjaro, EndeavourOS' },
-  sums: { name: 'SHA256SUMS', url: latest('SHA256SUMS'), size: '282 bytes', what: 'Checksums of the three files above' },
-  source: { name: `glance-${version}.tar.gz`, url: `${repo}/archive/refs/tags/v${version}.tar.gz`, size: '', what: 'Source code' },
+// Each kind of download, found in the release by its file name. The usual
+// name is only a fallback for a release that is missing one.
+const KINDS = {
+  flatpak: { match: /\.flatpak$/i, usual: 'Glance-x86_64.flatpak', what: 'Flatpak bundle — any distribution' },
+  appimage: { match: /\.AppImage$/i, usual: 'Glance-x86_64.AppImage', what: 'AppImage — one file, distributions from 2024 on' },
+  arch: { match: /\.pkg\.tar\.zst$/i, usual: 'glance-image-viewer-x86_64.pkg.tar.zst', what: 'Arch package — Arch, Manjaro, EndeavourOS' },
+  sums: { match: /^SHA256SUMS$/i, usual: 'SHA256SUMS', what: 'Checksums of the files above' },
 };
+
+function buildFiles(rel) {
+  const out = {};
+  for (const [id, k] of Object.entries(KINDS)) {
+    const asset = rel.assets.find((a) => k.match.test(a.name));
+    const name = asset?.name || k.usual;
+    out[id] = { name, url: latest(name), size: asset ? formatSize(asset.size) : '', what: k.what };
+  }
+  out.source = { name: `glance-${rel.version}.tar.gz`, url: `${repo}/archive/refs/tags/${rel.tag}.tar.gz`, size: '', what: 'Source code' };
+  return out;
+}
 
 export const requirements =
   'A 64-bit Intel or AMD computer running Linux. The Flatpak works on any distribution, old or new; the AppImage needs one from 2024 on.';
@@ -34,7 +51,7 @@ const flatpakNote = 'The Flatpak brings its own GTK, libadwaita, Poppler and qpd
 
 // `steps`: numbered blocks. A step has `code`, or `blocks` (several titled
 // alternatives, one per distribution). `after`: a line under the steps.
-export const channels = [
+const buildChannels = (files) => [
   {
     id: 'ubuntu',
     name: 'Ubuntu & friends',
@@ -199,8 +216,12 @@ export const channels = [
   },
 ];
 
+// Worked out once per release, and again if a newer release turns up.
+export const files = createRoot(() => createMemo(() => buildFiles(release())));
+export const channels = createRoot(() => createMemo(() => buildChannels(files())));
+
 // Which channel the home page shows: the one that works on any distribution.
-export const featuredChannel = () => channels.find((c) => c.id === 'other');
+export const featuredChannel = () => channels().find((c) => c.id === 'other');
 
 /** Best guess at the visitor's distribution, from what the browser admits to (rarely much). */
 export function guessChannel() {
@@ -214,4 +235,4 @@ export function guessChannel() {
 
 export const isLinux = () => /Linux/i.test(navigator.userAgent) && !/Android/i.test(navigator.userAgent);
 
-export const checkSums = `curl -LO ${files.sums.url}\nsha256sum -c --ignore-missing SHA256SUMS`;
+export const checkSums = () => `curl -LO ${files().sums.url}\nsha256sum -c --ignore-missing ${files().sums.name}`;

@@ -88,6 +88,7 @@ const more = [
   { icon: 'printer', t: 'Printing', d: 'Ctrl+P, for pictures and PDFs. A PDF prints page by page, fitted and turned to the paper; a picture prints as it is on screen, edits included.' },
   { icon: 'gear', t: 'Preferences', d: 'Ctrl+, gathers what Glance remembers: appearance, the slideshow, PDF layout and night mode, highlight colour, paper size, signatures, and Live Text’s download.' },
   { icon: 'keyboard', t: 'Every shortcut in one place', d: 'Ctrl+? opens a window listing all of them, for pictures and for PDFs, with a search box.' },
+  { icon: 'download', t: 'Updates itself', d: 'The AppImage and Flatpak install a new release by themselves, checked against its checksums; the Arch package asks for your password. Off in Preferences if you would rather choose.' },
 ];
 
 function Shortcuts() {

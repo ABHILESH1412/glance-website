@@ -1,10 +1,13 @@
-# Builds the site and publishes it to GitHub Pages on every push to main.
+# Builds the site and publishes it to GitHub Pages: on every push to main, and
+# every six hours, so a new Glance release reaches the site without a push.
 # One-time setup: repository Settings → Pages → Source: "GitHub Actions".
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '23 */6 * * *' # picks up a new Glance release within six hours
   workflow_dispatch: # a "Run workflow" button in the Actions tab
 
 permissions:
@@ -30,12 +33,25 @@ jobs:
 
       - run: npm ci
 
-      # A repository named <user>.github.io is served from the domain root;
-      # any other repository is served from /<repository-name>/.
+      # Before building, `npm run build` asks GitHub for Glance's latest release
+      # (scripts/fetch-release.mjs). If that fails, the build fails and the site
+      # already live stays as it is, rather than going out with stale downloads.
+      #
+      # A repository named <user>.github.io is served from the domain root; any
+      # other from /<repository-name>/. Worked out from GITHUB_REPOSITORY, which
+      # scheduled runs have too (their event carries no repository details).
       - name: Build
-        run: npm run build
         env:
-          BASE_PATH: ${{ endsWith(github.event.repository.name, '.github.io') && '/' || format('/{0}/', github.event.repository.name) }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_STRICT: '1'
+        run: |
+          name="${GITHUB_REPOSITORY#*/}"
+          case "$name" in
+            *.github.io) export BASE_PATH=/ ;;
+            *) export BASE_PATH="/$name/" ;;
+          esac
+          echo "Building for $BASE_PATH"
+          npm run build
 
       - uses: actions/configure-pages@v6
 

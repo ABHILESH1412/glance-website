@@ -7,6 +7,7 @@ import '@fontsource/instrument-serif/latin-400-italic.css';
 import './styles/global.css';
 import Layout from './Layout';
 import { routes } from './routes';
+import { checkLatest } from './data/release';
 
 render(
   () => (
@@ -18,3 +19,6 @@ render(
   ),
   document.getElementById('app'),
 );
+
+// Once the page is up, ask GitHub whether a release newer than the built-in one is out.
+(window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(checkLatest);

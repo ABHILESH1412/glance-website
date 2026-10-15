@@ -57,7 +57,6 @@ const teaser = [
 export default function Home() {
   let root;
   setTitle('');
-  const featured = featuredChannel();
 
   usePageMotion(
     () => root,
@@ -139,7 +138,7 @@ export default function Home() {
           <div class="hero__copy">
             <div class="hero__tags" data-intro>
               <span class="tag">
-                <i class="tag__dot" /> Version {version}
+                <i class="tag__dot" /> Version {version()}
               </span>
               <span class="tag">Pictures &amp; PDFs</span>
               <span class="tag">Linux</span>
@@ -338,7 +337,7 @@ export default function Home() {
           <div class="section-head section-head--split">
             <div>
               <span class="kicker" data-reveal>
-                New in {version}
+                New in 2.0
               </span>
               <h2 class="h2" data-reveal>
                 PDFs open in the same window — <em>and the changes stay in the file.</em>
@@ -415,7 +414,7 @@ export default function Home() {
       <section class="section--tight wrap news">
         <div class="news__head">
           <span class="kicker" data-reveal>
-            Also new in {version}
+            Also new in 2.0
           </span>
         </div>
         <div class="news__list">
@@ -544,9 +543,9 @@ export default function Home() {
               Open a picture, or a PDF. <em>That's it.</em>
             </h2>
             <p class="get__sub">
-              Glance {version} · 64-bit Linux · GPL-3.0 · as a Flatpak, on any distribution
+              Glance {version()} · 64-bit Linux · GPL-3.0 · as a Flatpak, on any distribution
             </p>
-            <CodeBlock code={[...featured.steps.map((s) => s.code), featured.run].join('\n')} class="get__code" />
+            <CodeBlock code={[...featuredChannel().steps.map((s) => s.code), featuredChannel().run].join('\n')} class="get__code" />
             <div class="get__cta">
               <A href="/download" class="btn btn--primary">
                 <Icon name="download" /> All download options

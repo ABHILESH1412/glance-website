@@ -9,21 +9,17 @@ import {
   files,
   guessChannel,
   isLinux,
-  latestRelease,
+  releaseDate,
+  releaseNotes,
+  releaseUrl,
   repo,
   requirements,
   version,
 } from '../data/downloads';
 import '../styles/download.css';
 
-const whatsNew = [
-  'PDFs: search, select and copy text, highlight, notes, contents and bookmarks, night mode',
-  'Draw and write on PDFs, sign them, and redact them for good',
-  'Combine PDFs and pictures into one PDF; password-protect PDFs and make them smaller',
-  'Live Text: copy the text out of pictures, read on your own computer',
-  'More shapes, levels, white balance and sharpness; JPEG 2000, Photoshop, OpenEXR and more',
-  'Slideshow, photo details, animated GIF frames, printing and Preferences',
-];
+const formatDate = (iso) =>
+  iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
 const faqs = [
   {
@@ -36,7 +32,7 @@ const faqs = [
   },
   {
     q: 'Does it update itself?',
-    a: 'Not yet. Run your distribution’s install commands again: they always fetch the newest release. Installing the newer Flatpak over the old one keeps your settings, signatures and everything else.',
+    a: 'Yes, from the first release after 2.0.0. The AppImage and the Flatpak download a new version, check it against the release’s checksums and install it by themselves; a Restart to Update button appears. The Arch package downloads the update and asks for your password to install it. A build from source only says an update is out. Turn Update automatically off in Preferences → General → Updates and nothing is downloaded until you say so.',
   },
   {
     q: 'Why is the Arch package called glance-image-viewer?',
@@ -44,7 +40,7 @@ const faqs = [
   },
   {
     q: 'Does it send anything anywhere?',
-    a: 'No. It is free software under GPL-3.0-or-later, with no account and no telemetry. Live Text downloads its engine and models (42.5 MB) the first time you use it, after asking, checked against fixed checksums — and then reads pictures on your own computer.',
+    a: 'Nothing about you or your files. It is free software under GPL-3.0-or-later, with no account and no telemetry. When it starts it asks GitHub, at most every six hours, whether there is a newer release. Live Text downloads its engine and models (42.5 MB) the first time you use it, after asking, checked against fixed checksums — and then reads pictures on your own computer.',
   },
 ];
 
@@ -52,10 +48,10 @@ export default function Download() {
   let root, panel;
   setTitle('Download');
 
-  const initial = () => (channels.find((c) => c.id === guessChannel()) || channels[0]).id;
+  const initial = () => (channels().find((c) => c.id === guessChannel()) || channels()[0]).id;
   const [selected, setSelected] = createSignal(initial());
-  const current = () => channels.find((c) => c.id === selected());
-  const file = () => files[current().file];
+  const current = () => channels().find((c) => c.id === selected());
+  const file = () => files()[current().file];
 
   function pick(id) {
     if (id === selected()) return;
@@ -84,7 +80,7 @@ export default function Download() {
       <section class="wrap dl__hero">
         <div class="dl__intro">
           <span class="kicker" data-intro>
-            Version {version}
+            Version {version()}
           </span>
           <h1 class="display dl__title" data-intro>
             Get <em>Glance.</em>
@@ -102,20 +98,37 @@ export default function Download() {
         </div>
         <aside class="dl__new card" data-intro>
           <div class="dl__new-head">
-            <span class="kicker">New in {version}</span>
-            <a class="link" href={latestRelease} target="_blank" rel="noopener">
+            <span class="kicker">New in {version()}</span>
+            <a class="link" href={releaseUrl()} target="_blank" rel="noopener">
               Release notes
             </a>
           </div>
-          <ul>
-            <For each={whatsNew}>{(item) => <li>{item}</li>}</For>
-          </ul>
+          <Show when={releaseDate()}>
+            <p class="dl__new-date faint">Released {formatDate(releaseDate())}</p>
+          </Show>
+          <Show
+            when={releaseNotes().length}
+            fallback={<p class="muted dl__new-empty">The release notes on GitHub say what changed.</p>}
+          >
+            <ul>
+              <For each={releaseNotes().slice(0, 8)}>
+                {(n) => (
+                  <li>
+                    <Show when={n.kind}>
+                      <span class={`dl__kind dl__kind--${n.kind}`}>{n.kind}</span>
+                    </Show>
+                    {n.text}
+                  </li>
+                )}
+              </For>
+            </ul>
+          </Show>
         </aside>
       </section>
 
       <section class="wrap dl__main" id="install" data-intro>
         <div class="dl__list" role="tablist" aria-label="Your distribution" aria-orientation="vertical">
-          <For each={channels}>
+          <For each={channels()}>
             {(c) => (
               <button
                 type="button"
@@ -269,7 +282,7 @@ export default function Download() {
               <button type="button" class="dl__also" onClick={() => jumpTo(current().also)}>
                 <span class="faint">Also works here</span>
                 <span>
-                  {channels.find((c) => c.id === current().also).name} <Icon name="arrow" size={16} />
+                  {channels().find((c) => c.id === current().also).name} <Icon name="arrow" size={16} />
                 </span>
               </button>
             </Show>
@@ -284,13 +297,13 @@ export default function Download() {
           </h2>
           <p class="muted" data-reveal>
             The files attached to the latest release, for 64-bit Intel and AMD computers.{' '}
-            <a class="link" href={latestRelease} target="_blank" rel="noopener">
-              Release {version} on GitHub
+            <a class="link" href={releaseUrl()} target="_blank" rel="noopener">
+              Release {version()} on GitHub
             </a>
           </p>
         </div>
         <div class="dl__table card" data-reveal>
-          <For each={Object.values(files)}>
+          <For each={Object.values(files())}>
             {(f) => (
               <div class="dl__row">
                 <div class="dl__row-main">
@@ -312,15 +325,16 @@ export default function Download() {
             <p class="muted">
               Optional. Each release lists the SHA-256 of its files in SHA256SUMS. In the folder you downloaded to:
             </p>
-            <CodeBlock code={checkSums} />
+            <CodeBlock code={checkSums()} />
             <p class="faint small-print">Every file you downloaded should say OK.</p>
           </div>
           <div data-reveal>
             <h3 class="h3">Updating, and what stays behind</h3>
             <p class="muted">
-              Run your distribution’s install commands again: they always fetch the newest release. A Flatpak installed from a
-              file does not update itself, and installing the newer file over it keeps your settings, signatures and everything
-              else.
+              Glance updates itself, from the first release after 2.0.0. The AppImage and Flatpak install a new version by
+              themselves; the Arch package asks for your password; a build from source only says one is out. Switch it off in
+              Preferences → General → Updates. Installing a newer package over an older one by hand works too, and keeps your
+              settings, signatures and everything else.
             </p>
             <p class="muted">
               Uninstalling leaves your settings in <code>~/.config/glance</code>, and your signatures and Live Text’s download in{' '}

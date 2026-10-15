@@ -293,3 +293,22 @@
   .dl__step-body { display: contents; }
   .dl__step-body > :not(h3) { grid-column: 1 / -1; }
 }
+
+.dl__new-date { margin: -6px 0 12px; font-size: 0.82rem; }
+.dl__new-empty { margin: 0; font-size: 0.9rem; }
+.dl__kind {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-family: var(--f-mono);
+  font-size: 0.66rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.dl__kind--feat { background: var(--accent-soft); color: var(--accent); }
+.dl__kind--fix { background: color-mix(in srgb, var(--good) 12%, transparent); color: var(--good); }

@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "fetch-release": "node scripts/fetch-release.mjs",
+    "predev": "node scripts/fetch-release.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/fetch-release.mjs",
     "build": "vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview"
   },
